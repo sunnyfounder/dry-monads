@@ -288,7 +288,15 @@ module Dry
           g.(failure)
         end
       end
-
+      class ArrayFailure < Failure
+        def failure
+          if @value.is_a?(Array)
+            @value
+          else
+            [@value]
+          end
+        end
+      end
       # A module that can be included for easier access to Result monads.
       #
       # @api public
@@ -298,6 +306,7 @@ module Dry
         # @see Result::Failure
         Failure = Result::Failure
 
+        ArrayFailure = Result::ArrayFailure
         # Value constructors
         #
         module Constructors
@@ -330,6 +339,11 @@ module Dry
             v = Undefined.default(value, block || Unit)
             Failure.new(v, RightBiased::Left.trace_caller)
           end
+
+          def ArrayFailure(value = Undefined, &block)
+            v = Undefined.default(value, block || Dry::Monads::Unit)
+            ArrayFailure.new(v, RightBiased::Left.trace_caller)
+          end
         end
 
         include Constructors
@@ -343,6 +357,7 @@ module Dry
     # @see Result::Failure
     Failure = Result::Failure
 
+    ArrayFailure = Result::ArrayFailure
     # Creates a module that has two methods: `Success` and `Failure`.
     # `Success` is identical to {Result::Mixin::Constructors#Success} and Failure
     # rejects values that don't conform the value of the `error`
